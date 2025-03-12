@@ -1,3 +1,5 @@
+use std::{fs::File, io::Write};
+
 use axum::{Router, extract::Multipart, response::Html, routing::get};
 
 async fn index() -> Html<&'static str> {
@@ -13,7 +15,22 @@ async fn upload(mut multipart: Multipart) {
         if field.name().unwrap() != "fileupload" {
             continue;
         }
-        println!("Got the file!")
+        println!("Got the file!");
+
+        // Grab the name
+        let file_name = field.file_name().unwrap();
+
+        // create a path for the soon-to-be file
+        let file_path = format!("files/{}", file_name);
+
+        // unwrap the incoming bytes
+        let data = field.bytes().await.unwrap();
+
+        // Open a handle to the file
+        let mut file_handle = File::create(file_path).expect("Failed to open file handle!");
+
+        // write the incoming data to the handle
+        file_handle.write_all(&data).expect("Failed to write data!");
     }
 }
 
